@@ -1,5 +1,14 @@
+require('dotenv').config();
+
 const express = require('express'), multer = require('multer'), fs = require('fs'), path = require('path'), crypto = require('crypto');
 const L = require('./lib');
+const DEPT = {
+  road: 'Public Works',
+  water: 'Water Supply',
+  electrical: 'Electricity Board',
+  drain: 'Drainage & Sewage',
+  general: 'Municipal Corporation'
+};
 const app = express(), up = multer({ limits: { fileSize: 8e6 } });
 const DB = path.join(__dirname, 'data/db.json');
 const db = fs.existsSync(DB) ? JSON.parse(fs.readFileSync(DB)) : { tickets: [], trust: {} };
@@ -46,25 +55,125 @@ app.post('/api/reports', up.fields([{ name: 'image', maxCount: 1 }, { name: 'aud
     if (parent) { parent.dupes.push(Date.now()); rescore(parent); save();
       return res.status(200).json({ message: 'Identical issue already reported nearby. Your submission has been linked, boosting its urgency.', duplicate: true, ticket: pub(parent), trackingLink: '/track/' + parent.id }); }
     const mGeo = await L.proximity(lat, lng);
-    const t = { id: 'VX-' + crypto.randomBytes(3).toString('hex').toUpperCase(), token, lat, lng, ward: L.wardOf(lat, lng), category: a.category, department: L.DEPT[a.category] || L.DEPT.general,
-      sBase: a.sBase, mGeo, mVuln: a.mVuln || 0, dupes: [], emb, flags, status: 'open', createdAt: Date.now(), beforeImg: putMedia(img), landmark: a.landmark };
+    const t = {
+      id: 'VX-' + crypto.randomBytes(3).toString('hex').toUpperCase(),
+      token,
+      lat,
+      lng,
+      category: a.category || 'road',
+      department: (DEPT[a.category] || 'Public Works'),
+      sBase: a.sBase || 5,
+      mGeo,
+      mVuln: a.mVuln || 0,
+      dupes: [],
+      emb,
+      flags,
+      status: 'open',
+      createdAt: Date.now()
+    };
     rescore(t); db.tickets.push(t); save();
     res.status(201).json({ ticket: pub(t), trackingLink: '/track/' + t.id });
-  } catch (e) { console.error(e); res.status(500).json({ error: 'Internal error' }); }
+  } catch (e) { console.error("REPORT SUBMISSION ERROR:",e); res.status(500).json({ error:e.message || "Internal error" }); }
 });
 app.get('/api/tickets', (req, res) => { const { status, ward, department } = req.query;
   res.json(db.tickets.filter(t => (!status || t.status === status) && (!ward || t.ward === ward) && (!department || t.department === department)).map(t => pub(t))); });
 app.get('/api/tickets/:id', (req, res) => { const t = db.tickets.find(x => x.id === req.params.id); t ? res.json(pub(t)) : res.sendStatus(404); });
+app.get('/track/:id', (req, res) => {
+  const t = db.tickets.find(x => x.id === req.params.id);
+
+  if (!t) {
+    return res.status(404).send('Ticket not found');
+  }
+
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Track Ticket ${t.id}</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          background: #101820;
+          color: white;
+          padding: 30px;
+        }
+        .card {
+          max-width: 600px;
+          margin: 30px auto;
+          padding: 24px;
+          border: 1px solid #555;
+          border-radius: 12px;
+          background: #1b2933;
+        }
+        h1 { color: #72d6a0; }
+        p { margin: 14px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <h1>Ticket Tracking</h1>
+        <p><strong>Ticket ID:</strong> <span id="ticketId"></span></p>
+        <p><strong>Department:</strong> <span id="department"></span></p>
+        <p><strong>Status:</strong> <span id="status"></span></p>
+        <p><strong>Severity:</strong> <span id="severity"></span></p>
+        <p><strong>Tier:</strong> <span id="tier"></span></p>
+        <p><strong>Reports linked:</strong> <span id="reports"></span></p>
+        <p><strong>SLA due:</strong> <span id="sla"></span></p>
+      </div>
+
+      <script>
+        const ticket = ${JSON.stringify({
+          id: t.id,
+          department: t.department,
+          status: t.status,
+          severity: t.severity,
+          tier: t.tier,
+          reports: 1 + t.dupes.length,
+          slaDue: t.slaDue
+        })};
+
+        document.getElementById('ticketId').textContent = ticket.id;
+        document.getElementById('department').textContent = ticket.department;
+        document.getElementById('status').textContent = ticket.status;
+        document.getElementById('severity').textContent = ticket.severity;
+        document.getElementById('tier').textContent = ticket.tier;
+        document.getElementById('reports').textContent = ticket.reports;
+        document.getElementById('sla').textContent =
+          new Date(ticket.slaDue).toLocaleString();
+      </script>
+    </body>
+    </html>
+  `);
+});
 
 app.post('/api/tickets/:id/resolve', up.single('after_image'), async (req, res) => {
   if (!isOfficer(req)) return res.status(403).json({ error: 'Field officer key required' });
-  const t = db.tickets.find(x => x.id === req.params.id); if (!t) return res.sendStatus(404);
+  const t = db.tickets.find(x => x.id === req.params.id);
+  if (!t) return res.sendStatus(404);
   if (!req.file) return res.status(400).json({ error: 'after_image required' });
+
   const after = await L.scrub(req.file.buffer);
-  const d = await L.visualDiff(media.get(t.beforeImg), after, t, { lat: +req.body.lat, lng: +req.body.lng });
-  t.audit = t.audit || []; t.audit.push({ at: Date.now(), kind: 'resolve_attempt', contractor: req.body.contractor_id, notes: req.body.notes, ok: d.ok, reason: d.reason });
-  if (!d.ok) { t.status = 'in_progress'; save(); return res.status(422).json({ error: d.reason }); }
-  t.status = 'resolved'; t.resolvedAt = Date.now(); t.afterImg = putMedia(after); save(); res.json(pub(t));
+  const before = media.get(t.beforeImg?.replace('/media/', ''));
+
+  // Run autonomous visual diff verification
+  const d = await L.verifyRepairDiff(before, after);
+
+  t.audit = t.audit || [];
+  t.audit.push({ at: Date.now(), kind: 'resolve_attempt', contractor: req.get('x-officer-key'), details: d });
+
+  if (!d.isVerified) {
+    t.status = 'in_progress';
+    save();
+    return res.status(422).json({ error: d.auditNotes || 'Visual diff failed: Defect still present or location mismatch', details: d });
+  }
+
+  t.status = 'resolved';
+  t.resolvedAt = Date.now();
+  t.afterImg = putMedia(after);
+  save();
+  res.json({ ok: true, ticket: pub(t, true), audit: d });
 });
 app.post('/api/tickets/:id/dispute', up.single('counter_image'), async (req, res) => {
   const t = db.tickets.find(x => x.id === req.params.id); if (!t) return res.sendStatus(404);
@@ -76,14 +185,31 @@ app.post('/api/tickets/:id/dispute', up.single('counter_image'), async (req, res
   t.status = 'in_progress'; t.flags.push('disputed'); save(); res.json(pub(t)); // TODO: 200m neighbourhood quorum
 });
 app.get('/api/scorecards', (req, res) => {
-  const out = L.WARDS.map(w => { const ts = db.tickets.filter(t => t.ward === w.id), r = ts.filter(t => t.status === 'resolved');
-    const hrs = r.map(t => (t.resolvedAt - t.createdAt) / 3.6e6).sort((a, b) => a - b), ok = r.filter(t => t.resolvedAt <= t.slaDue).length;
+  const out = L.WARDS.map(w => {
+    const ts = db.tickets.filter(t => t.ward === w.id);
+    const r = ts.filter(t => t.status === 'resolved');
+    const hrs = r.map(t => (t.resolvedAt - t.createdAt) / 3.6e6).sort((a, b) => a - b);
     const overdue = ts.filter(t => t.status !== 'resolved' && Date.now() > t.slaDue).length;
-    return { ward: w.name, constituency: w.mla, representative: 'Not loaded (add electoral dataset)', party: '—', total: ts.length, resolved: r.length,
-      resolutionPct: ts.length ? +(100 * r.length / ts.length).toFixed(1) : null, medianTurnaroundHours: hrs.length ? +hrs[Math.floor(hrs.length / 2)].toFixed(1) : null,
-      slaCompliancePct: ts.length ? +(100 * ok / ts.length).toFixed(1) : null, overdue,
-      chronicHazards: ts.filter(t => t.status !== 'resolved' && t.severity >= 80 && Date.now() - t.createdAt > 30 * 864e5).length }; });
+    const resolutionPct = ts.length ? +(100 * r.length / ts.length).toFixed(1) : 0;
+
+    return {
+      ward: w.name,
+      constituency: w.mla,
+      representative: 'Not loaded',
+      total: ts.length,
+      resolved: r.length,
+      resolutionPct,
+      slaCompliancePct: ts.length ? +(100 * (ts.length - overdue) / ts.length).toFixed(1) : 0,
+      overdue,
+      chronicHazards: ts.filter(t => t.status !== 'resolved' && t.severity >= 80 && Date.now() - t.createdAt > 7.2e7).length
+    };
+  });
+
+  // Sort descending: highest resolution percentage first
+  out.sort((a, b) => (b.resolutionPct || 0) - (a.resolutionPct || 0));
+
   res.json(out);
 });
+
 if (require.main === module) app.listen(process.env.PORT || 3000, () => console.log('VOXEL on :' + (process.env.PORT || 3000)));
 module.exports = app;

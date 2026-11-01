@@ -1,3 +1,5 @@
+const { GoogleGenAI, Type } = require('@google/genai');
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const crypto = require('crypto');
 // ---- privacy ----
 const userToken = (phone) => crypto.createHmac('sha256', process.env.PEPPER || 'dev-pepper').update(phone).digest('hex');
@@ -54,12 +56,32 @@ function mockTriage(text) {
   return { isCivic: true, category: cat, confidence: cat === 'general' ? 0.5 : 0.8, sBase: cat === 'general' ? 5 : 7, mVuln: vuln, landmark: '', language: 'auto', mock: true };
 }
 async function triage(img, text) {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) return mockTriage(text);
-  const prompt = `Civic triage. Voice-note transcript: "${text}". Return JSON only: {"isCivic":bool,"category":"road|water|electrical|drain|general","confidence":0-1,"sBase":1-10,"mVuln":0|15|25,"landmark":string,"language":string}`;
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: 'image/jpeg', data: img.toString('base64') } }] }], generationConfig: { responseMimeType: 'application/json' } }) });
-  return JSON.parse((await r.json()).candidates[0].content.parts[0].text);
+  if (!process.env.GEMINI_API_KEY) {
+    return mockTriage(text);
+  }
+
+  const prompt = `Civic triage. Voice-note transcript: "${text}". Return JSON only: {"isCivic":true,"category":"road","confidence":0.9,"sBase":8}`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3.8-flash",
+      contents: [
+        {
+          role: "user",
+          parts: [
+            { inlineData: { data: img.toString("base64"), mimeType: "image/jpeg" } },
+            { text: prompt }
+          ]
+        }
+      ]
+    });
+
+    const clean = response.text.replace(/```json/g, "").replace(/```/g, "").trim();
+    return JSON.parse(clean);
+  } catch (err) {
+    console.error("Gemini triage error, using fallback:", err.message);
+    return { isCivic: true, category: 'road', confidence: 0.9, sBase: 8, ...mockTriage(text) };
+  }
 }
 // Crude embedding (byte histogram) for the mock; swap for a real image-embedding model.
 function embed(buf) { const v = new Array(64).fill(0); for (let i = 0; i < buf.length; i += 7) v[buf[i] >> 2]++; return v; }
@@ -80,4 +102,61 @@ async function visualDiff(before, after, tk, pos) {
 async function scrub(buf) { // strips EXIF by re-encoding; face/plate blur NOT implemented (see README)
   try { return await require('sharp')(buf).rotate().jpeg({ quality: 82 }).toBuffer(); } catch { return buf; }
 }
-module.exports = { userToken, maskedId, inPoly, dist, wardOf, WARDS, proximity, severity, tierOf, SLA_H, velocity, DEPT, triage, embed, cosine, visualDiff, scrub };
+async function verifyRepairDiff(beforeImageBuffer, afterImageBuffer) {
+  const prompt = `Compare these two images of a civic defect site.
+Image 1 is the reported defect (BEFORE).
+Image 2 is the contractor repair proof (AFTER).
+
+Verify:
+1. Are background landmarks (buildings, poles, road curbs) matching to ensure it's the exact same location?
+2. Has the defect (pothole, burst pipe, trash pile) been satisfactorily repaired?
+
+Return a boolean 'isVerified' and a short explanation.`;
+
+  const response = await ai.models.generateContent({
+    model: "gemini-3.8-flash",
+    contents: [
+      {
+        role: "user",
+        parts: [
+          { inlineData: { data: beforeImageBuffer.toString("base64"), mimeType: "image/jpeg" } },
+          { inlineData: { data: afterImageBuffer.toString("base64"), mimeType: "image/jpeg" } },
+          { text: prompt }
+        ]
+      }
+    ],
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          landmarksMatch: { type: Type.BOOLEAN },
+          defectResolved: { type: Type.BOOLEAN },
+          isVerified: { type: Type.BOOLEAN },
+          auditNotes: { type: Type.STRING }
+        },
+        required: ["landmarksMatch", "defectResolved", "isVerified", "auditNotes"]
+      }
+    }
+  });
+
+  return JSON.parse(response.text);
+}
+module.exports = {
+  userToken,
+  maskedId,
+  inPoly,
+  dist,
+  SLA_H,
+  wardOf,
+  WARDS,
+  proximity,
+  severity,
+  tierOf,
+  cosine,
+  scrub,
+  embed,
+  triage,
+  visualDiff,
+  verifyRepairDiff
+};
