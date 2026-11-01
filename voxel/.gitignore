@@ -1,0 +1,18 @@
+# secrets
+.env
+.env.*
+!.env.template
+*.env.local
+# deps / builds
+node_modules/
+# runtime data (tickets, citizen media)
+server/data/db.json
+server/data/media/
+# generated
+client/config.js
+# OS / editor / logs
+.DS_Store
+.vscode/
+.idea/
+*.log
+*.zip

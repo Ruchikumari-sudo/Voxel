@@ -1,0 +1,589 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VOXEL</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  /* ==========================================================
+   VOXEL Premium Theme - Modern Civic Intelligence
+   ========================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-gradient: radial-gradient(at 0% 0%, #e0e7ff 0px, transparent 50%),
+                 radial-gradient(at 100% 0%, #ede9fe 0px, transparent 50%),
+                 radial-gradient(at 50% 100%, #f1f5f9 0px, transparent 50%),
+                 #f8fafc;
+  --card-bg: rgba(255, 255, 255, 0.94);
+  --card-border: rgba(226, 232, 240, 0.85);
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --brand-primary: #1e1b4b;
+  --brand-accent: #3b82f6;
+  --brand-gradient: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #2563eb 100%);
+  --success-glow: #10b981;
+  --shadow-elevated: 0 20px 40px -15px rgba(15, 23, 42, 0.08), 0 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+body {
+  background: var(--bg-gradient);
+  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text-main);
+  margin: 0;
+  padding: 24px 16px;
+  box-sizing: border-box;
+}
+
+/* Elevated Floating Card */
+main, .report-card, form {
+  max-width: 520px;
+  margin: 20px auto 40px auto;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 32px 28px;
+  box-shadow: var(--shadow-elevated);
+  box-sizing: border-box;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Step Dividers & Headings */
+h2, h3, .step-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--brand-primary);
+  margin: 22px 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Modern Form Inputs */
+input[type="text"],
+input[type="tel"],
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  background: #ffffff;
+  margin: 8px 0 16px 0;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+input[type="text"]:focus,
+input[type="tel"]:focus,
+textarea:focus {
+  border-color: var(--brand-accent);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+  background: #ffffff;
+}
+
+/* Primary Action Buttons */
+button, input[type="submit"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 14px 20px;
+  background: var(--brand-gradient);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  margin: 8px 0 14px 0;
+}
+
+button:hover, input[type="submit"]:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+  filter: brightness(1.05);
+}
+
+button:active, input[type="submit"]:active {
+  transform: translateY(0);
+}
+
+/* Styled File Upload Dropzone */
+input[type="file"] {
+  display: block;
+  width: 100%;
+  padding: 20px 16px;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  box-sizing: border-box;
+  cursor: pointer;
+  margin: 8px 0 14px 0;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+input[type="file"]:hover {
+  border-color: var(--brand-accent);
+  background: #eff6ff;
+  color: var(--brand-primary);
+}
+
+/* Quick Category Pill Chips */
+button[type="button"]:not([id*="record"]):not([class*="primary"]) {
+  width: auto;
+  margin: 0 6px 10px 0;
+  padding: 7px 16px;
+  background: #ffffff;
+  color: #475569;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+button[type="button"]:not([id*="record"]):not([class*="primary"]):hover {
+  border-color: var(--brand-accent);
+  color: var(--brand-accent);
+  background: #eff6ff;
+  transform: translateY(-1px);
+}
+
+/* GPS & Status Badges with Pulse */
+span:has(> [style*="green"]),
+.gps-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #065f46;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  margin: 4px 0 16px 0;
+}
+/* Circular Metric Ring Tracker */
+.tracker-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.ring-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(12px);
+}
+
+.ring-container {
+  position: relative;
+  width: 170px;
+  height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ring-container svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.05);
+}
+
+.ring-progress {
+  fill: none;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Glowing ring colors */
+.ring-solved {
+  stroke: #10b981;
+  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.4));
+}
+
+.ring-progress-bar {
+  stroke: #f59e0b;
+  filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.4));
+}
+
+.ring-unsolved {
+  stroke: #f43f5e;
+  filter: drop-shadow(0 0 6px rgba(244, 63, 94, 0.4));
+}
+
+.ring-center-text {
+  position: absolute;
+  text-align: center;
+  pointer-events: none;
+}
+
+.ring-center-text .total-num {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #ffffff;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1;
+}
+
+.ring-center-text .total-lbl {
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-top: 4px;
+}
+
+/* Legend items next to the ring */
+.tracker-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  padding-left: 24px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.legend-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #ffffff;
+}
+
+/* Quick Summary Mini Cards */
+.mini-stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+/* Circular Metric Ring Tracker */
+.tracker-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.ring-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(12px);
+}
+
+.ring-container {
+  position: relative;
+  width: 170px;
+  height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ring-container svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.05);
+}
+
+.ring-progress {
+  fill: none;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Glowing ring colors */
+.ring-solved {
+  stroke: #10b981;
+  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.4));
+}
+
+.ring-progress-bar {
+  stroke: #f59e0b;
+  filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.4));
+}
+
+.ring-unsolved {
+  stroke: #f43f5e;
+  filter: drop-shadow(0 0 6px rgba(244, 63, 94, 0.4));
+}
+
+.ring-center-text {
+  position: absolute;
+  text-align: center;
+  pointer-events: none;
+}
+
+.ring-center-text .total-num {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #ffffff;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1;
+}
+
+.ring-center-text .total-lbl {
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-top: 4px;
+}
+
+/* Legend items next to the ring */
+.tracker-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  padding-left: 24px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.legend-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #ffffff;
+}
+
+/* Quick Summary Mini Cards */
+.mini-stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+body{margin:0;font:16px Inter,system-ui,sans-serif;background:#F8FAFC;color:#0F172A}
+header{background:#0F172A;color:#fff;padding:10px 14px}header small{color:#94A3B8;display:block}
+nav{display:flex;gap:4px;background:#0F172A;padding:0 8px}nav button{background:none;border:0;color:#CBD5E1;padding:10px 12px;font-size:15px}nav .on{color:#fff;border-bottom:3px solid #F59E0B}
+main{padding:14px;max-width:900px;margin:auto}.card{background:#fff;border:1px solid #E2E8F0;border-radius:8px;padding:12px;margin:10px 0}
+button.p{background:#0F172A;color:#fff;border:0;border-radius:6px;padding:12px 16px;font-size:16px;width:100%;margin-top:8px}
+input,textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #E2E8F0;border-radius:6px;margin-top:6px;font:inherit}
+#map{height:60vh;border-radius:8px}.b{padding:2px 8px;border-radius:10px;color:#fff;font-size:13px}
+.open{background:#EF4444}.in_progress{background:#F59E0B}.resolved{background:#10B981}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px;border-bottom:1px solid #E2E8F0;text-align:left}
+#gps{display:inline-block;width:10px;height:10px;border-radius:50%;background:#F59E0B}.hide{display:none}img.pv{max-width:100%;border-radius:6px}
+</style></head><body>
+<header><b>VOXEL</b><small>The Citizen's Voice. The Camera's Truth.</small></header>
+<nav id="nav"><button data-t="rep" class="on">Report</button><button data-t="map">Map</button><button data-t="sc">Scorecards</button><button data-t="off">Officer</button></nav>
+<main>
+  <!-- Circular Resolution & Health Tracker -->
+<div class="tracker-row">
+  <!-- Interactive Circular Activity Ring Card -->
+  <div class="ring-card">
+    <div class="ring-container">
+      <svg viewBox="0 0 160 160">
+        <!-- Background Tracks -->
+        <circle class="ring-track" cx="80" cy="80" r="68" stroke-width="10"></circle>
+        <circle class="ring-track" cx="80" cy="80" r="52" stroke-width="10"></circle>
+        <circle class="ring-track" cx="80" cy="80" r="36" stroke-width="10"></circle>
+
+        <!-- Outer Ring: Solved / Verified (Circumference ~ 427.25) -->
+        <circle class="ring-progress ring-solved" cx="80" cy="80" r="68" stroke-width="10"
+          stroke-dasharray="427.25" stroke-dashoffset="136.72">
+        </circle>
+
+        <!-- Middle Ring: In Progress (Circumference ~ 326.72) -->
+        <circle class="ring-progress ring-progress-bar" cx="80" cy="80" r="52" stroke-width="10"
+          stroke-dasharray="326.72" stroke-dashoffset="163.36">
+        </circle>
+
+        <!-- Inner Ring: Open / Unsolved (Circumference ~ 226.19) -->
+        <circle class="ring-progress ring-unsolved" cx="80" cy="80" r="36" stroke-width="10"
+          stroke-dasharray="226.19" stroke-dashoffset="147.02">
+        </circle>
+      </svg>
+
+      <!-- Center Totals -->
+      <div class="ring-center-text">
+        <div class="total-num" id="totalIncidentsCount">142</div>
+        <div class="total-lbl">Reported</div>
+      </div>
+    </div>
+
+    <!-- Breakdown Legend -->
+    <div class="tracker-legend">
+      <div class="legend-item">
+        <div style="display: flex; align-items: center;">
+          <span class="legend-dot" style="background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
+          <span style="font-size: 0.85rem; color: var(--text-main);">Solved & Verified</span>
+        </div>
+        <span class="legend-val" style="color: #34d399;" id="solvedCount">96</span>
+      </div>
+
+      <div class="legend-item">
+        <div style="display: flex; align-items: center;">
+          <span class="legend-dot" style="background: #f59e0b; box-shadow: 0 0 8px #f59e0b;"></span>
+          <span style="font-size: 0.85rem; color: var(--text-main);">In Progress</span>
+        </div>
+        <span class="legend-val" style="color: #fbbf24;" id="inProgressCount">31</span>
+      </div>
+
+      <div class="legend-item">
+        <div style="display: flex; align-items: center;">
+          <span class="legend-dot" style="background: #f43f5e; box-shadow: 0 0 8px #f43f5e;"></span>
+          <span style="font-size: 0.85rem; color: var(--text-main);">Unsolved / Open</span>
+        </div>
+        <span class="legend-val" style="color: #fb7185;" id="unsolvedCount">15</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLA & Health Summary Metric -->
+  <div class="mini-stat-card">
+    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); margin-bottom: 8px;">
+      Resolution Velocity
+    </div>
+    <div style="font-size: 2rem; font-weight: 700; color: #ffffff; font-family: 'JetBrains Mono', monospace; margin-bottom: 6px;">
+      67.6%
+    </div>
+    <div style="font-size: 0.82rem; color: #34d399; display: flex; align-items: center; gap: 4px;">
+      ↑ +8.4% this week
+    </div>
+    <div style="font-size: 0.72rem; color: var(--text-faint); margin-top: 10px; border-top: 1px solid var(--border-subtle); padding-top: 10px;">
+      Avg SLA turnaround: <strong>18.4 hrs</strong>
+    </div>
+  </div>
+</div>
+<section id="rep">
+ <div class="card"><b>1. Photo</b> <input type="file" id="img" accept="image/*" capture="environment"><img id="pv" class="pv hide">
+  <p><span id="gps"></span> <span id="gpst">Acquiring GPS…</span></p>
+  <div id="pin" class="hide">GPS unavailable – enter coordinates: <input id="mlat" placeholder="lat"><input id="mlng" placeholder="lng"></div></div>
+ <div class="card"><b>2. Speak your issue (any language)</b>
+  <button class="p" id="rec">🎤 Tap to record</button>
+  <div id="chips"></div><textarea id="txt" rows="2" placeholder="Or type here (transcription fallback)"></textarea></div>
+ <div class="card"><b>3. Verify phone</b><input id="ph" placeholder="+919876543210">
+  <button class="p" id="otpb">Send OTP</button><input id="code" class="hide" placeholder="OTP"><button class="p hide" id="verb">Verify</button></div>
+ <button class="p" id="sub" disabled>Submit report</button><div id="res"></div>
+</section>
+<section id="map" class="hide"><div id="m" style="height:60vh"></div><div id="drawer" class="card hide"></div></section>
+<section id="sc" class="hide"><div class="card"><table id="tb"></table></div><p><small>Objective metrics only. Representative data must be loaded from official electoral datasets.</small></p></section>
+<section id="off" class="hide"><div class="card"><b>Field officer resolution</b>
+ <input id="okey" placeholder="Officer key"><input id="tid" placeholder="Ticket ID (VX-…)"><input id="cid" placeholder="Contractor ID"><textarea id="notes" placeholder="Repair notes"></textarea>
+ <input type="file" id="after" accept="image/*" capture="environment"><button class="p" id="resb">Upload repair photo & verify</button><div id="ores"></div></div>
+ <div id="board"></div></section>
+</main>
+<script src="config.js"></script>
+<script>
+const API=(window.VOXEL_CONFIG||{}).API_BASE||"";
+const $=id=>document.getElementById(id);let pos=null,session=null,blob=null,mr=null,mapInit=false,mp;
+const colors={open:'#EF4444',in_progress:'#F59E0B',resolved:'#10B981'};
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.className='');b.className='on';
+ ['rep','map','sc','off'].forEach(s=>$(s).classList.toggle('hide',s!==b.dataset.t));if(b.dataset.t==='map')loadMap();if(b.dataset.t==='sc')loadSc();if(b.dataset.t==='off')loadBoard()});
+navigator.geolocation?.getCurrentPosition(p=>{pos={lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy};$('gps').style.background='#10B981';$('gpst').textContent='GPS locked'},
+ ()=>{$('gps').style.background='#EF4444';$('gpst').textContent='GPS denied – manual entry';$('pin').classList.remove('hide')});
+['Pothole','Water','Wire','Drain'].forEach(c=>{const b=document.createElement('button');b.textContent=c;b.style.margin='6px 4px 0 0';b.onclick=()=>$('txt').value=c.toLowerCase();$('chips').append(b)});
+$('img').onchange=e=>{const f=e.target.files[0];if(f){$('pv').src=URL.createObjectURL(f);$('pv').classList.remove('hide')}chk()};
+$('rec').onclick=async()=>{if(mr&&mr.state==='recording'){mr.stop();return}
+ try{const s=await navigator.mediaDevices.getUserMedia({audio:true});mr=new MediaRecorder(s);const ch=[];mr.ondataavailable=e=>ch.push(e.data);
+ mr.onstop=()=>{blob=new Blob(ch,{type:'audio/webm'});s.getTracks().forEach(t=>t.stop());$('rec').textContent='✅ Recorded (tap to redo)'};mr.start();$('rec').textContent='⏺ Recording… tap to stop'}
+ catch{$('rec').textContent='Mic unavailable – type below'}};
+const post=(u,b)=>fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(r=>r.json());
+$('otpb').onclick=async()=>{const r=await post(API+'/api/otp/request',{phone:$('ph').value});if(r.error)return alert(r.error);
+ $('code').value=r.sandboxCode||'';$('code').classList.remove('hide');$('verb').classList.remove('hide')};
+$('verb').onclick=async()=>{const r=await post(API+'/api/otp/verify',{phone:$('ph').value,code:$('code').value});if(r.error)return alert(r.error);session=r.session;$('verb').textContent='✅ Verified';chk()};
+function chk(){$('sub').disabled=!($('img').files[0]&&session)}
+$('sub').onclick=async()=>{const p=pos||{lat:+$('mlat').value,lng:+$('mlng').value,acc:0};const f=new FormData();
+ f.append('image',$('img').files[0]);if(blob)f.append('audio',blob);f.append('text',$('txt').value);f.append('lat',p.lat);f.append('lng',p.lng);f.append('accuracy',p.acc);f.append('session',session);
+ let r;try{r=await fetch(API+'/api/reports',{method:'POST',body:f})}catch{return $('res').innerHTML='<div class=card style="background:#FEF3C7">Offline: please retry when back online (IndexedDB queue not yet implemented).</div>'}
+ const j=await r.json();if(j.error)return $('res').innerHTML=`<div class=card style="border-color:#EF4444">${j.error}</div>`;const t=j.ticket;
+ $('res').innerHTML=`<div class=card><b>${j.duplicate?j.message:'Report received'}</b><p>Ticket <b>${t.id}</b> · ${t.department}<br>Severity <span class="b ${t.tier===1?'open':t.tier===2?'in_progress':'resolved'}">${t.severity} (Tier ${t.tier})</span><br>SLA due: <span id=cd></span></p>
+ <button onclick="navigator.clipboard.writeText(location.origin+'${j.trackingLink}')">Copy tracking link</button></div>`;
+ const tick=()=>{const ms=t.slaDue-Date.now();$('cd')&&($('cd').textContent=ms>0?Math.floor(ms/36e5)+'h '+Math.floor(ms%36e5/6e4)+'m left':'OVERDUE')};tick();setInterval(tick,3e4)};
+async function loadMap(){if(!mapInit){mp=L.map('m').setView([22.3149,87.3105],14);L.tileLayer(((window.VOXEL_CONFIG||{}).TILE_URL||'https://tile.openstreetmap.org/{z}/{x}/{y}.png'),{attribution:'© OpenStreetMap'}).addTo(mp);mapInit=true}
+ setTimeout(()=>mp.invalidateSize(),50);const ts=await (await fetch(API+'/api/tickets')).json();
+ ts.forEach(t=>L.circleMarker([t.lat,t.lng],{radius:6+Math.min(t.reports,6),color:colors[t.status],fillOpacity:.8}).addTo(mp).on('click',()=>{const d=$('drawer');d.classList.remove('hide');
+ d.innerHTML=`<b>${t.id}</b> <span class="b ${t.status}">${t.status}</span><br>${t.department} · severity ${t.severity} · ${t.reports} report(s)<br>Due ${new Date(t.slaDue).toLocaleString()}<div style="display:flex;gap:6px"><img class=pv style="width:50%" src="${API}${t.beforeImg}">${t.afterImg?`<img class=pv style="width:50%" src="${API}${t.afterImg}">`:''}</div>`}))}
+async function loadSc(){const s=await (await fetch(API+'/api/scorecards')).json();
+ $('tb').innerHTML='<tr><th>Ward</th><th>Representative</th><th>Resolved %</th><th>Median hrs</th><th>SLA %</th><th>Overdue</th><th>Chronic</th></tr>'+
+ s.map(r=>`<tr><td>${r.ward}<br><small>${r.constituency}</small></td><td>${r.representative}</td><td>${r.resolutionPct??'–'}</td><td>${r.medianTurnaroundHours??'–'}</td><td>${r.slaCompliancePct??'–'}</td><td>${r.overdue}</td><td>${r.chronicHazards}</td></tr>`).join('')}
+async function loadBoard(){const ts=(await (await fetch(API+'/api/tickets')).json()).filter(t=>t.status!=='resolved');
+ $('board').innerHTML=[1,2,3].map(n=>`<div class=card><b>${['','Critical (12h)','Moderate (48h)','Routine (7d)'][n]}</b>${ts.filter(t=>t.tier===n).map(t=>`<div>${t.id} · ${t.category} · ${t.severity}</div>`).join('')||'<div>—</div>'}</div>`).join('')}
+$('resb').onclick=async()=>{const f=new FormData();f.append('after_image',$('after').files[0]);f.append('contractor_id',$('cid').value);f.append('notes',$('notes').value);
+ const p=pos||{lat:0,lng:0};f.append('lat',p.lat);f.append('lng',p.lng);
+ const r=await fetch(`${API}/api/tickets/${$('tid').value}/resolve`,{method:'POST',headers:{'x-officer-key':$('okey').value},body:f});const j=await r.json();
+ $('ores').textContent=j.error||('Resolved '+j.id);loadBoard()};
+</script></body></html>
