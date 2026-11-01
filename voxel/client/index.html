@@ -3,6 +3,79 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
+  /* Force consistent dark theme across all sections */
+main, section, .card {
+  background: #0b0f19 !important;
+  color: #f8fafc !important;
+}
+
+/* Fix circular ring card and stat card */
+.tracker-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin: 24px auto;
+  max-width: 900px;
+}
+
+.ring-card, .mini-stat-card {
+  background: #111827 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+}
+
+/* Center count inside the ring */
+.ring-center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.ring-center-text .total-num {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+  font-family: monospace;
+}
+.ring-center-text .total-lbl {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+}
+
+/* Dark Table Container */
+table#tb {
+  width: 100%;
+  max-width: 900px;
+  margin: 24px auto;
+  border-collapse: collapse;
+  background: #111827;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+table#tb th {
+  background: #1e293b;
+  color: #94a3b8;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding: 14px 16px;
+  text-align: left;
+}
+
+table#tb td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+  font-size: 0.88rem;
+}
   /* ==========================================================
    VOXEL Premium Theme - Modern Civic Intelligence
    ========================================================== */
