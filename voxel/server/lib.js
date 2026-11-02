@@ -57,10 +57,46 @@ function mockTriage(text) {
 }
 async function triage(img, text) {
   if (!process.env.GEMINI_API_KEY) {
-    return mockTriage(text);
-  }
+  return {
+    isCivic: false,
+    category: 'general',
+    confidence: 0,
+    sBase: 1,
+    mVuln: 0,
+    landmark: '',
+    language: 'auto',
+    error: 'Image validation requires GEMINI_API_KEY'
+  };
+}
 
-  const prompt = `Civic triage. Voice-note transcript: "${text}". Return JSON only: {"isCivic":true,"category":"road","confidence":0.9,"sBase":8}`;
+  const prompt = `
+You are validating citizen reports of civic infrastructure problems.
+
+Examine the attached image carefully. The user's text is:
+"${text}"
+
+Accept only images that visibly show a real civic infrastructure issue,
+such as a pothole, damaged road, water leak, overflowing drain,
+broken streetlight, exposed electrical wire, or public waste problem.
+
+Reject unrelated images such as wallpapers, selfies, portraits,
+pets, food, screenshots, memes, and ordinary scenery.
+
+Do not assume an image is a civic issue just because the user says so.
+If the image is unclear or does not visibly show a civic defect,
+return isCivic: false.
+
+Return JSON only:
+{
+  "isCivic": true,
+  "category": "road",
+  "confidence": 0.9,
+  "sBase": 8,
+  "mVuln": 0,
+  "landmark": "",
+  "language": "auto"
+}
+`;
 
   try {
     const response = await ai.models.generateContent({
@@ -80,7 +116,15 @@ async function triage(img, text) {
     return JSON.parse(clean);
   } catch (err) {
     console.error("Gemini triage error, using fallback:", err.message);
-    return { isCivic: true, category: 'road', confidence: 0.9, sBase: 8, ...mockTriage(text) };
+    return {
+  isCivic: false,
+  category: 'general',
+  confidence: 0,
+  sBase: 1,
+  mVuln: 0,
+  landmark: '',
+  language: 'auto'
+}
   }
 }
 // Crude embedding (byte histogram) for the mock; swap for a real image-embedding model.
